@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8'?><!-- Published by JAX-WS RI (http://jax-ws.java.net). RI's version is Metro/2.4.2 (UNKNOWN-17d59c9; 2018-09-26T15:16:30-0700) JAXWS-RI/2.3.1 JAXWS-API/2.3.1 JAXB-RI/2.3.1 JAXB-API/2.3.1 svn-revision#unknown. --><xs:schema xmlns:tns="http://recaudos/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://recaudos/">
+
+<xs:element name="anularpago" nillable="true" type="tns:anularpagobanco"/>
+
+<xs:element name="anularpagoResponse" nillable="true" type="tns:anularpagobancoResponse"/>
+
+<xs:element name="anularpagobanco" type="tns:anularpagobanco"/>
+
+<xs:element name="anularpagobancoResponse" type="tns:anularpagobancoResponse"/>
+
+<xs:element name="cargarpago" type="tns:cargarpago"/>
+
+<xs:element name="cargarpagoResponse" type="tns:cargarpagoResponse"/>
+
+<xs:element name="cargarpagobanco" type="tns:cargarpagobanco"/>
+
+<xs:element name="cargarpagobancoResponse" type="tns:cargarpagobancoResponse"/>
+
+<xs:element name="consultacuenta" type="tns:consultacuenta"/>
+
+<xs:element name="consultacuentaResponse" type="tns:consultacuentaResponse"/>
+
+<xs:element name="consultafactura" type="tns:consultafactura"/>
+
+<xs:element name="consultafacturaResponse" type="tns:consultafacturaResponse"/>
+
+<xs:element name="consultarmovimiento" type="tns:consultarmovimiento"/>
+
+<xs:element name="consultarmovimientoResponse" type="tns:consultarmovimientoResponse"/>
+
+<xs:complexType name="anularpagobanco">
+<xs:sequence>
+<xs:element name="numerofactura" type="xs:int" minOccurs="0"/>
+<xs:element name="cuenta" type="xs:long" minOccurs="0"/>
+<xs:element name="valor" type="xs:long" minOccurs="0"/>
+<xs:element name="fecha" type="xs:string" minOccurs="0"/>
+<xs:element name="tipo" type="xs:string" minOccurs="0"/>
+<xs:element name="banco" type="xs:string" minOccurs="0"/>
+<xs:element name="token" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="anularpagobancoResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:respuesta" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="respuesta">
+<xs:sequence>
+<xs:element name="codigoRespuesta" type="xs:int" minOccurs="0"/>
+<xs:element name="comentario" type="xs:string" minOccurs="0"/>
+<xs:element name="numerofactura" type="xs:long" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultarmovimiento">
+<xs:sequence>
+<xs:element name="fecha" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultarmovimientoResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:respuestaListado" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="respuestaListado">
+<xs:sequence>
+<xs:element name="codigoRespuesta" type="xs:int" minOccurs="0"/>
+<xs:element name="comentario" type="xs:string" minOccurs="0"/>
+<xs:element name="recaudos" type="tns:recaudo" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="recaudo">
+<xs:sequence>
+<xs:element name="numeroFactura" type="xs:int" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cargarpagobanco">
+<xs:sequence>
+<xs:element name="numerofactura" type="xs:int" minOccurs="0"/>
+<xs:element name="cuenta" type="xs:long" minOccurs="0"/>
+<xs:element name="valor" type="xs:long" minOccurs="0"/>
+<xs:element name="fecha" type="xs:string" minOccurs="0"/>
+<xs:element name="tipo" type="xs:string" minOccurs="0"/>
+<xs:element name="banco" type="xs:string" minOccurs="0"/>
+<xs:element name="token" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cargarpagobancoResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:respuesta" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultafactura">
+<xs:sequence>
+<xs:element name="idfactura" type="xs:string" minOccurs="0"/>
+<xs:element name="cuenta" type="xs:string" minOccurs="0"/>
+<xs:element name="tipofact" type="xs:int" minOccurs="0"/>
+<xs:element name="banco" type="xs:int" minOccurs="0"/>
+<xs:element name="token" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultafacturaResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:respuestafactura" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="respuestafactura">
+<xs:sequence>
+<xs:element name="aplicado" type="xs:string" minOccurs="0"/>
+<xs:element name="codRespuesta" type="xs:int" minOccurs="0"/>
+<xs:element name="cuenta" type="xs:string" minOccurs="0"/>
+<xs:element name="descripcion" type="xs:string" minOccurs="0"/>
+<xs:element name="fechapago" type="xs:string" minOccurs="0"/>
+<xs:element name="fechaultimopago" type="xs:string" minOccurs="0"/>
+<xs:element name="idfactura" type="xs:string" minOccurs="0"/>
+<xs:element name="tipofact" type="xs:int" minOccurs="0"/>
+<xs:element name="totalfactura" type="xs:long" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cargarpago">
+<xs:sequence>
+<xs:element name="numerofactura" type="xs:int" minOccurs="0"/>
+<xs:element name="cuenta" type="xs:long" minOccurs="0"/>
+<xs:element name="valor" type="xs:long" minOccurs="0"/>
+<xs:element name="fecha" type="xs:string" minOccurs="0"/>
+<xs:element name="tipo" type="xs:string" minOccurs="0"/>
+<xs:element name="token" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cargarpagoResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:respuesta" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultacuenta">
+<xs:sequence>
+<xs:element name="cuenta" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultacuentaResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:respuestafactura" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

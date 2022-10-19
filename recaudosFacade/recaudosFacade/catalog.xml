@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://192.168.100.72:8080/recaudos/recaudos?wsdl" uri="xml-resources/web-service-references/recaudos/wsdl/192.168.100.72_8080/recaudos/recaudos.wsdl"/>
+    <system systemId="http://192.168.100.72:8080/recaudos/recaudos?xsd=1" uri="xml-resources/web-service-references/recaudos/wsdl/192.168.100.72_8080/recaudos/recaudos.xsd_1.xsd"/>
+</catalog>
