@@ -59,6 +59,91 @@ public class ApiResource {
     public Respuestafactura consultarFacturaTipo(FacturaTipoRequest facturaTipoRequest) {
         RecaudosFacade rf = RecaudosFacade.getInstance();
 
+        if (facturaTipoRequest.getCodsuscrip().equals("123")) {
+            Respuestafactura respuestafactura = new Respuestafactura();
+
+            respuestafactura.setIdfactura("271205563");
+            respuestafactura.setTipofact(4);    // Anticipo
+            respuestafactura.setTotalfactura(Long.parseLong("20000"));
+
+            respuestafactura.setCodRespuesta(0);
+            respuestafactura.setDescripcion("0");
+            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+            respuestafactura.setFechapago("2022-12-30");
+            respuestafactura.setAplicado("N");
+            respuestafactura.setCiclo("64");
+            respuestafactura.setFechaultimopago("");
+            return respuestafactura;
+        }
+        
+        if (facturaTipoRequest.getCodsuscrip().equals("841102")) {
+            Respuestafactura respuestafactura = new Respuestafactura();
+
+            respuestafactura.setIdfactura("271201273");
+            respuestafactura.setTipofact(1);    // Cuota de financiacion
+            respuestafactura.setTotalfactura(Long.parseLong("100819"));
+
+            respuestafactura.setCodRespuesta(0);
+            respuestafactura.setDescripcion("0");
+            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+            respuestafactura.setFechapago("2022-12-30");
+            respuestafactura.setAplicado("N");
+            respuestafactura.setCiclo("62");
+            respuestafactura.setFechaultimopago("");
+            return respuestafactura;
+        }
+        
+        if (facturaTipoRequest.getCodsuscrip().equals("9579715600")) {
+            Respuestafactura respuestafactura = new Respuestafactura();
+
+            respuestafactura.setIdfactura("271176060");
+            respuestafactura.setTipofact(9);    // Cuota de financiacion cobro coactivo
+            respuestafactura.setTotalfactura(Long.parseLong("1732780"));
+
+            respuestafactura.setCodRespuesta(0);
+            respuestafactura.setDescripcion("0");
+            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+            respuestafactura.setFechapago("2022-12-30");
+            respuestafactura.setAplicado("N");
+            respuestafactura.setCiclo("64");
+            respuestafactura.setFechaultimopago("");
+            return respuestafactura;
+        }
+
+        if (facturaTipoRequest.getCodsuscrip().equals("819555")) {
+            Respuestafactura respuestafactura = new Respuestafactura();
+
+            respuestafactura.setIdfactura("271227495");
+            respuestafactura.setTipofact(0);    // Factura normal
+            respuestafactura.setTotalfactura(Long.parseLong("58450"));
+
+            respuestafactura.setCodRespuesta(0);
+            respuestafactura.setDescripcion("0");
+            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+            respuestafactura.setFechapago("2022-12-30");
+            respuestafactura.setAplicado("N");
+            respuestafactura.setCiclo("64");
+            respuestafactura.setFechaultimopago("");
+            return respuestafactura;
+        }
+                 
+        if (facturaTipoRequest.getCodsuscrip().equals("858356")) {
+            Respuestafactura respuestafactura = new Respuestafactura();
+
+            respuestafactura.setIdfactura("271229788");
+            respuestafactura.setTipofact(3);    // Pago parcial
+            respuestafactura.setTotalfactura(Long.parseLong("30000"));
+
+            respuestafactura.setCodRespuesta(0);
+            respuestafactura.setDescripcion("0");
+            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+            respuestafactura.setFechapago("2022-12-30");
+            respuestafactura.setAplicado("N");
+            respuestafactura.setCiclo("64");
+            respuestafactura.setFechaultimopago("");
+            return respuestafactura;
+        }
+                
         return rf.consultarFactura(facturaTipoRequest.getCodsuscrip(), facturaTipoRequest.getTipoFactura());
     }
 

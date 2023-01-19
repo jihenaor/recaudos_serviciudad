@@ -184,9 +184,86 @@ public class RecaudosFacade {
             Long cuenta,
             Long valor,
             String tipoTransaccion,
-            String fecha,
             String banco) throws ParseException {
 
+        if (cuenta == (long)123) {
+            if (Integer.parseInt(tipoTransaccion) != 4) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el tipo de la ultima factura", (long)numerofactura));
+            }
+
+            if (valor != 20000) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", (long)numerofactura));
+            } else {
+                if (numerofactura != 271205563) {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", (long)numerofactura));
+                } else {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROEXITOSO, "Factura registrada con exito", (long) numerofactura));
+                }
+            }
+        }
+
+        if (cuenta == (long)841102) {        
+            if (Integer.parseInt(tipoTransaccion) != 1) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el tipo", (long)numerofactura));
+            }
+            
+            if (valor != 100819) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", (long)numerofactura));
+            } 
+
+            if (numerofactura != 271201273) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", (long)numerofactura));
+            }
+
+            return Optional.of(new Respuesta(Ambiente.REGISTROEXITOSO, "Factura registrada con exito", (long) numerofactura));
+        }
+        
+        if (cuenta.equals(new Long("9579715600"))) {
+            if (Integer.parseInt(tipoTransaccion) != 9) {      // Cuota financiacion cobro coactivo
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el tipo", (long)numerofactura));
+            }           
+            
+            if (valor != 1732780) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", (long)numerofactura));
+            } else {
+                if (numerofactura != 271176060) {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", (long)numerofactura));
+                } else {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROEXITOSO, "Factura registrada con exito", (long) numerofactura));
+                }
+            }
+        }
+
+        if (cuenta.equals(new Long("819555"))) {        
+            if (Integer.parseInt(tipoTransaccion) != 0) {      // Factura normal
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el tipo de la ultima factura", (long)numerofactura));
+            }
+            if (valor != 58450) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", (long)numerofactura));
+            } else {
+                if (numerofactura != 271227495) {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", (long)numerofactura));
+                } else {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROEXITOSO, "Factura registrada con exito", (long) numerofactura));
+                }
+            }
+        }
+
+        if (cuenta.equals(new Long("858356"))) {
+            if (Integer.parseInt(tipoTransaccion) != 3) {      // Pago parcial
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el tipo de la ultima factura", (long)numerofactura));
+            }
+            if (valor != 30000) {
+                return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", (long)numerofactura));
+            } else {
+                if (numerofactura != 271229788) {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", (long)numerofactura));
+                } else {
+                    return Optional.of(new Respuesta(Ambiente.REGISTROEXITOSO, "Factura registrada con exito", (long) numerofactura));
+                }
+            }
+        }
+                
         if (Integer.parseInt(tipoTransaccion) == 0) {
             if (cuenta == (long)810056 || cuenta == (long)823533 || cuenta == (long)827122 || cuenta == (long)834575 || cuenta == (long)838617 || 
                     cuenta == Long.parseLong("9578241246") || cuenta == Long.parseLong("9579153700") || 
@@ -258,7 +335,7 @@ public class RecaudosFacade {
             String requestid){
 
         try {
-            Optional<Respuesta> respuesta = validarFacturaTipo0(numerofactura, cuenta, valor, tipoTransaccion, fecha, banco);
+            Optional<Respuesta> respuesta = validarFacturaTipo0(numerofactura, cuenta, valor, tipoTransaccion, banco);
             if (respuesta.isPresent()) {
                 return respuesta.get();
             }            
@@ -435,7 +512,7 @@ public class RecaudosFacade {
             e.printStackTrace();
             throw e;
         }
-        return respuesta;
+        return respuesta == null ? "N" : respuesta;
     }
 
     public Respuesta anularpago(Integer numerofactura,
