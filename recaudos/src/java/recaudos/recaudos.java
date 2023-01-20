@@ -126,7 +126,7 @@ public class recaudos {
             return null;
         }
         
-       return rf.consultarFactura(idfactura, "00");
+       return rf.consultarFactura(idfactura, tipofact + "", "", 0l);
     }
 
     /**
@@ -249,7 +249,7 @@ public class recaudos {
                 
 
                 
-        return rf.consultarFactura(cuenta, "00");
+        return rf.consultarFactura(cuenta, "00", "", 0l);
         
     }
 }

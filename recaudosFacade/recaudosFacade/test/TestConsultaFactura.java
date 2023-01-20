@@ -13,7 +13,7 @@ import recaudosfacade.RecaudosFacade;
  *
  * @author Administrador
  */
-public class TestDavivienda {
+public class TestConsultaFactura {
 
     /**
      * @param args the command line arguments
@@ -24,9 +24,14 @@ public class TestDavivienda {
        Consulta consulta = new Consulta();
         
        consulta.setIdFactura("");
-       Respuestafactura respuestadavivienda = new Respuestafactura();
+       Respuestafactura respuestadavivienda;
         
-        respuestadavivienda = rf.consultarFactura("808495", "00");
+//        respuestadavivienda = rf.consultarFactura("808495", "00", "", "");
+//        respuestadavivienda = rf.consultarFactura("803047", "01", "141019", 32443l);
+//        respuestadavivienda = rf.consultarFactura("9579377620", "02", "50000", 271366668L);
+          respuestadavivienda = rf.consultarFactura("805668", "06", "50000", 11083L);
+
+        System.out.println(respuestadavivienda.getCodRespuesta());
     }
 }
 

@@ -49,7 +49,7 @@ public class ApiResource {
     public Respuestafactura consultarFactura(FacturaRequest facturaRequest) {
         RecaudosFacade rf = RecaudosFacade.getInstance();
 
-        return rf.consultarFactura(facturaRequest.getCodsuscrip(), "00");
+        return rf.consultarFactura(facturaRequest.getCodsuscrip(), "00", "", 0l);
     }
     
     @POST
@@ -143,8 +143,8 @@ public class ApiResource {
             respuestafactura.setFechaultimopago("");
             return respuestafactura;
         }
-                
-        return rf.consultarFactura(facturaTipoRequest.getCodsuscrip(), facturaTipoRequest.getTipoFactura());
+
+        return rf.consultarFactura(facturaTipoRequest.getCodsuscrip(), facturaTipoRequest.getTipoFactura(), "", 0l);
     }
 
     @POST
