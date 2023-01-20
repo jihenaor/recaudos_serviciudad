@@ -28,9 +28,9 @@ public class RecaudosFacade {
 // Static variable reference of single_instance
     // of type Singleton
     private static RecaudosFacade single_instance = null;
-    private static String nombreDB = "RECAUDO.FDB";
-      
-    private Mysql sql1;
+    private static final String nombreDB = "RECAUDO.FDB";
+    private static final String codigoApostar = "88";
+    private final Mysql sql1;
             
     // Declaring a variable of type String
     public String s;
@@ -285,7 +285,7 @@ public class RecaudosFacade {
                 }
             } else {
                 Respuestafactura respuestafactura = consultarFactura(cuenta + "", tipoTransaccion);
-                if (respuestafactura.getCodRespuesta() != 9 && !banco.equals("88")) {
+                if (respuestafactura.getCodRespuesta() != 9 && !banco.equals(codigoApostar)) {
                     if (respuestafactura.getFechapago() == null) {
                         System.out.println("La fecha de pago es null. Cuenta: " + cuenta);
                     } else {
@@ -319,7 +319,7 @@ public class RecaudosFacade {
                     }
                 }
             }
-        }  
+        }
 
         return Optional.empty();
     }
