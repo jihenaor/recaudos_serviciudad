@@ -11,6 +11,9 @@ public class Respuestafactura {
     private String aplicado;
     private String fechaultimopago;
     private String ciclo;
+    private Long valorPagado;
+    private Long valorFacturaSinPagos;
+    private String facturavencida;
     
     public Integer getCodRespuesta() {
         return CodRespuesta;
@@ -90,6 +93,30 @@ public class Respuestafactura {
 
     public void setCiclo(String ciclo) {
         this.ciclo = ciclo;
+    }
+
+    public Long getValorPagado() {
+        return valorPagado;
+    }
+
+    public void setValorPagado(Long valorPagado) {
+        this.valorPagado = valorPagado;
+    }
+
+    public Long getValorFacturaSinPagos() {
+        return valorFacturaSinPagos;
+    }
+
+    public void setValorFacturaSinPagos(Long valorFacturaSinPagos) {
+        this.valorFacturaSinPagos = valorFacturaSinPagos;
+    }
+
+    public String getFacturavencida() {
+        return facturavencida;
+    }
+
+    public void setFacturavencida(String facturaVencida) {
+        this.facturavencida = facturaVencida;
     }
     
 }

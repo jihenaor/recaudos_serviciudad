@@ -1,8 +1,12 @@
 package recaudosrest;
 
 import com.serviciudad.pojos.FacturaPagaResponse;
+import com.serviciudad.pojos.Health;
 import com.serviciudad.pojos.Movimientorecaudador;
 import com.serviciudad.pojos.Respuestafactura;
+import com.serviciudad.pojos.Respuestafacturas;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -18,11 +22,9 @@ import recaudosfacade.RecaudoException;
 import recaudosfacade.RecaudosFacade;
 import recaudosfacade.Respuesta;
 
-/**
- * REST Web Service
- *
- * @author Administrador
- */
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @Path("rec")
 public class ApiResource {
     @Context
@@ -43,13 +45,42 @@ public class ApiResource {
         return msg;
     }
     
+    @GET
+    @Path("/health")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Health getHealt(@PathParam("msg") String msg) {
+        RecaudosFacade rf = RecaudosFacade.getInstance();
+
+        try {
+            rf.consultarFacturas("808082");
+        } catch (Exception ex) {
+            return new Health("OK", "OK", ex.getMessage());
+        }
+        return new Health("OK", "OK", "");
+    }
+    
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Respuestafactura consultarFactura(FacturaRequest facturaRequest) {
         RecaudosFacade rf = RecaudosFacade.getInstance();
 
-        return rf.consultarFactura(facturaRequest.getCodsuscrip(), "00", "", 0l);
+        return rf.consultarFactura(facturaRequest.getCodsuscrip(), "00", 0L, "0");
+    }
+    
+    @POST
+    @Path("/consultafacturas")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuestafacturas consultarFacturas(FacturaRequest facturaRequest) throws Exception {
+        RecaudosFacade rf = RecaudosFacade.getInstance();
+
+        try {
+            return rf.consultarFacturas(facturaRequest.getCodsuscrip());
+        } catch (Exception ex) {
+            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, null, ex);
+            throw ex;
+        }
     }
     
     @POST
@@ -61,90 +92,121 @@ public class ApiResource {
 
         if (facturaTipoRequest.getCodsuscrip().equals("123")) {
             Respuestafactura respuestafactura = new Respuestafactura();
+         
+            if (!facturaTipoRequest.getNumerofactura().equals("271205563")
+                    || facturaTipoRequest.getValor() != 20000
+                    || Integer.parseInt(facturaTipoRequest.getTipoFactura()) != 4){
+                            respuestafactura.setCodRespuesta(1);
+                respuestafactura.setDescripcion("No se encontraron facturas" +
+                                        " codsuscrip: " + facturaTipoRequest.getCodsuscrip() +                                             
+                                        ". tipoFactura: " + facturaTipoRequest.getTipoFactura() +
+                                        ". Valor " + facturaTipoRequest.getValor() +
+                                        ". numeroFactura: " + facturaTipoRequest.getNumerofactura());
+            } else {
+                respuestafactura.setIdfactura("271205563");
+                respuestafactura.setTipofact(4);    // Anticipo
+                respuestafactura.setTotalfactura(Long.parseLong("20000"));
 
-            respuestafactura.setIdfactura("271205563");
-            respuestafactura.setTipofact(4);    // Anticipo
-            respuestafactura.setTotalfactura(Long.parseLong("20000"));
-
-            respuestafactura.setCodRespuesta(0);
-            respuestafactura.setDescripcion("0");
-            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
-            respuestafactura.setFechapago("2022-12-30");
-            respuestafactura.setAplicado("N");
-            respuestafactura.setCiclo("64");
-            respuestafactura.setFechaultimopago("");
+                respuestafactura.setCodRespuesta(0);
+                respuestafactura.setDescripcion("0");
+                respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+                respuestafactura.setFechapago("2023-03-30");
+                respuestafactura.setAplicado("N");
+                respuestafactura.setCiclo("64");
+                respuestafactura.setFechaultimopago("");
+            }
             return respuestafactura;
         }
         
         if (facturaTipoRequest.getCodsuscrip().equals("841102")) {
             Respuestafactura respuestafactura = new Respuestafactura();
 
-            respuestafactura.setIdfactura("271201273");
-            respuestafactura.setTipofact(1);    // Cuota de financiacion
-            respuestafactura.setTotalfactura(Long.parseLong("100819"));
+            if (!facturaTipoRequest.getNumerofactura().equals("271201273")
+                    || facturaTipoRequest.getValor() != 100819
+                    || Integer.parseInt(facturaTipoRequest.getTipoFactura()) != 1){
+                            respuestafactura.setCodRespuesta(1);
+                respuestafactura.setDescripcion("No se encontraron facturas" +
+                                        " codsuscrip: " + facturaTipoRequest.getCodsuscrip() +                                             
+                                        ". tipoFactura: " + facturaTipoRequest.getTipoFactura() +
+                                        ". Valor " + facturaTipoRequest.getValor() +
+                                        ". numeroFactura: " + facturaTipoRequest.getNumerofactura());
+            } else {
+                respuestafactura.setIdfactura("271201273");
+                respuestafactura.setTipofact(1);    // Cuota de financiacion
+                respuestafactura.setTotalfactura(Long.parseLong("100819"));
 
-            respuestafactura.setCodRespuesta(0);
-            respuestafactura.setDescripcion("0");
-            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
-            respuestafactura.setFechapago("2022-12-30");
-            respuestafactura.setAplicado("N");
-            respuestafactura.setCiclo("62");
-            respuestafactura.setFechaultimopago("");
+                respuestafactura.setCodRespuesta(0);
+                respuestafactura.setDescripcion("0");
+                respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+                respuestafactura.setFechapago("2023-03-30");
+                respuestafactura.setAplicado("N");
+                respuestafactura.setCiclo("62");
+                respuestafactura.setFechaultimopago("");
+            }
             return respuestafactura;
         }
         
-        if (facturaTipoRequest.getCodsuscrip().equals("9579715600")) {
-            Respuestafactura respuestafactura = new Respuestafactura();
-
-            respuestafactura.setIdfactura("271176060");
-            respuestafactura.setTipofact(9);    // Cuota de financiacion cobro coactivo
-            respuestafactura.setTotalfactura(Long.parseLong("1732780"));
-
-            respuestafactura.setCodRespuesta(0);
-            respuestafactura.setDescripcion("0");
-            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
-            respuestafactura.setFechapago("2022-12-30");
-            respuestafactura.setAplicado("N");
-            respuestafactura.setCiclo("64");
-            respuestafactura.setFechaultimopago("");
-            return respuestafactura;
-        }
-
         if (facturaTipoRequest.getCodsuscrip().equals("819555")) {
             Respuestafactura respuestafactura = new Respuestafactura();
 
-            respuestafactura.setIdfactura("271227495");
-            respuestafactura.setTipofact(0);    // Factura normal
-            respuestafactura.setTotalfactura(Long.parseLong("58450"));
+            if (!facturaTipoRequest.getNumerofactura().equals("271227495")
+                    || facturaTipoRequest.getValor() != 58450
+                    || Integer.parseInt(facturaTipoRequest.getTipoFactura()) != 0){
+                            respuestafactura.setCodRespuesta(1);
+                respuestafactura.setDescripcion("No se encontraron facturas" +
+                                        " codsuscrip: " + facturaTipoRequest.getCodsuscrip() +                                             
+                                        ". tipoFactura: " + facturaTipoRequest.getTipoFactura() +
+                                        ". Valor " + facturaTipoRequest.getValor() +
+                                        ". numeroFactura: " + facturaTipoRequest.getNumerofactura());
+            } else {
+                respuestafactura.setIdfactura("271227495");
+                respuestafactura.setTipofact(0);    // Factura normal
+                respuestafactura.setTotalfactura(Long.parseLong("58450"));
 
-            respuestafactura.setCodRespuesta(0);
-            respuestafactura.setDescripcion("0");
-            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
-            respuestafactura.setFechapago("2022-12-30");
-            respuestafactura.setAplicado("N");
-            respuestafactura.setCiclo("64");
-            respuestafactura.setFechaultimopago("");
+                respuestafactura.setCodRespuesta(0);
+                respuestafactura.setDescripcion("0");
+                respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+                respuestafactura.setFechapago("2023-03-30");
+                respuestafactura.setAplicado("N");
+                respuestafactura.setCiclo("64");
+                respuestafactura.setFechaultimopago("");
+            }
             return respuestafactura;
         }
-                 
+
         if (facturaTipoRequest.getCodsuscrip().equals("858356")) {
             Respuestafactura respuestafactura = new Respuestafactura();
+            if (!facturaTipoRequest.getNumerofactura().equals("271229788")
+                    || facturaTipoRequest.getValor() != 30000
+                    || Integer.parseInt(facturaTipoRequest.getTipoFactura()) != 3){
+                            respuestafactura.setCodRespuesta(1);
+                respuestafactura.setDescripcion("No se encontraron facturas" +
+                                        " codsuscrip: " + facturaTipoRequest.getCodsuscrip() +                                             
+                                        ". tipoFactura: " + facturaTipoRequest.getTipoFactura() +
+                                        ". Valor " + facturaTipoRequest.getValor() +
+                                        ". numeroFactura: " + facturaTipoRequest.getNumerofactura());
+            } else {
+                respuestafactura.setIdfactura("271229788");
+                respuestafactura.setTipofact(3);    // Pago parcial
+                respuestafactura.setTotalfactura(Long.parseLong("30000"));
 
-            respuestafactura.setIdfactura("271229788");
-            respuestafactura.setTipofact(3);    // Pago parcial
-            respuestafactura.setTotalfactura(Long.parseLong("30000"));
-
-            respuestafactura.setCodRespuesta(0);
-            respuestafactura.setDescripcion("0");
-            respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
-            respuestafactura.setFechapago("2022-12-30");
-            respuestafactura.setAplicado("N");
-            respuestafactura.setCiclo("64");
-            respuestafactura.setFechaultimopago("");
+                respuestafactura.setCodRespuesta(0);
+                respuestafactura.setDescripcion("0");
+                respuestafactura.setCuenta(facturaTipoRequest.getCodsuscrip());
+                respuestafactura.setFechapago("2023-03-30");
+                respuestafactura.setAplicado("N");
+                respuestafactura.setCiclo("64");
+                respuestafactura.setFechaultimopago("");
+            }
             return respuestafactura;
         }
 
-        return rf.consultarFactura(facturaTipoRequest.getCodsuscrip(), facturaTipoRequest.getTipoFactura(), "", 0l);
+        Respuestafactura respuestafactura = rf.consultarFactura(facturaTipoRequest.getCodsuscrip(), 
+                facturaTipoRequest.getTipoFactura(), 
+                facturaTipoRequest.getValor() == null ? 0L : facturaTipoRequest.getValor(),
+                facturaTipoRequest.getNumerofactura());
+        
+        return respuestafactura;
     }
 
     @POST
@@ -217,10 +279,14 @@ public class ApiResource {
         if (facturaTipoPagoRequest.getNumerofactura() == null) {
             return new Respuesta(Ambiente.REGISTROFALLO, "Numero de factura es nulo", 0l);
         }
+        
+        if (facturaTipoPagoRequest.getTotal() == 0) {
+            return new Respuesta(Ambiente.REGISTROFALLO, "El valor de la factura es requerido", 0l);
+        }
 
-//        Date date = new Date();
-//        SimpleDateFormat DateFor = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-//        String stringDate= DateFor.format(date);
+        Date date = new Date();
+        SimpleDateFormat DateFor = new SimpleDateFormat("yyyyMMddhhmmss");
+        String stringDate= DateFor.format(date);
         
         respuesta = rf.registrarRecaudo(
                 Long.valueOf(facturaTipoPagoRequest.getNumerofactura()), 
@@ -231,8 +297,8 @@ public class ApiResource {
                 "xx",
                 facturaTipoPagoRequest.getTipoFactura(),
                 facturaTipoPagoRequest.getBanco(), 
-                facturaTipoPagoRequest.getNumerofactura());
-
+                stringDate);
+       
         return respuesta;
     }
     

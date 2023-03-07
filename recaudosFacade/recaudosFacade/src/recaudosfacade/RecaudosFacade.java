@@ -4,6 +4,7 @@ package recaudosfacade;
 import com.serviciudad.pojos.FacturaPagaResponse;
 import com.serviciudad.pojos.Movimientorecaudador;
 import com.serviciudad.pojos.Respuestafactura;
+import com.serviciudad.pojos.Respuestafacturas;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.sql.ResultSet;
@@ -25,19 +26,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RecaudosFacade {
-// Static variable reference of single_instance
-    // of type Singleton
     private static RecaudosFacade single_instance = null;
     private static final String nombreDB = "RECAUDO.FDB";
-    private static final String codigoApostar = "88";
     private final Mysql sql1;
-            
-    // Declaring a variable of type String
+
     public String s;
  
-    // Constructor
-    // Here we will be creating private constructor
-    // restricted to this class itself
+
     private RecaudosFacade()
     {
         sql1 = new Mysql(nombreDB);
@@ -179,8 +174,8 @@ public class RecaudosFacade {
             return false;
         }
     }
-    
-    private Optional<Respuesta> validarFacturaTipo(Long numerofactura,
+
+    private Optional<Respuesta> validarFacturaTipo(String numerofactura,
             Long cuenta,
             Long valor,
             String tipoTransaccion,
@@ -292,9 +287,11 @@ public class RecaudosFacade {
                 }
             } else {
 */
+            
+        if (Integer.parseInt(tipoTransaccion) == 0) {
                 Respuestafactura respuestafactura = consultarFactura(cuenta + "", 
                                                            tipoTransaccion, 
-                                                            valor.toString(), 
+                                                           valor, 
                                                           numerofactura);
 
                 
@@ -303,39 +300,39 @@ public class RecaudosFacade {
                         System.out.println("La fecha de pago es null. Cuenta: " + cuenta);
                     } else {
                         DateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd");
-                        Date fechapago = sourceFormat.parse(respuestafactura.getFechapago());
-
+                        Date fechapago = (sourceFormat.parse(respuestafactura.getFechapago()));
+                        
                         Format formatter = new SimpleDateFormat("yyyyMMdd");
                         String fechaPagoString = formatter.format(fechapago);
+                        
 //                        String fechaActualString = formatter.format(new Date());
                         String fechaPagoReportadoBancoString = fechaPagoReportadoBanco.substring(0, 10).replace("-", "").replace("/", "");
 
                         if (Integer.parseInt(fechaPagoReportadoBancoString) > Integer.parseInt(fechaPagoString)) {
                             System.out.println("Cuenta: " + numerofactura + " Fecha limite de pago: " + fechaPagoString + " Fecha de pago banco: " + fechaPagoReportadoBancoString);
-                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "Supera Fecha limite de pago " + respuestafactura.getFechapago(), numerofactura));
-                        }
+                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "Supera Fecha limite de pago " + respuestafactura.getFechapago(), Long.parseLong(numerofactura)));
+                         }
 
                         if (!Objects.equals(respuestafactura.getTotalfactura(), valor)) {
                             System.out.println("No coincide el valor. Cuenta: " + cuenta + "  Tipo: " + tipoTransaccion + ".  Servi: " + respuestafactura.getTotalfactura() + " Apo: " + valor);
 
-                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", (long)numerofactura));
+                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide el valor de la ultima factura", Long.parseLong(numerofactura)));
                         }
                         if (!Objects.equals(respuestafactura.getIdfactura(), numerofactura + "")) {
                             System.out.println("No coincide el numero de la factura. Cuenta: " + cuenta + "  Tipo: " + tipoTransaccion + ".  Servi: " + respuestafactura.getTotalfactura() + " Apo: " + valor);
 
-                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", (long)numerofactura));
+                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No coincide numero de la ultima factura", Long.parseLong(numerofactura)));
                         }
 
                         if (respuestafactura.getAplicado() != null && respuestafactura.getAplicado().equals("S")) {
-                           System.out.println("Factura ya pagada. Cuenta: " + cuenta + "  Tipo: " + tipoTransaccion + ".  Servi: " + respuestafactura.getTotalfactura() + " Apo: " + valor);
-                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "No Factura pagada", (long)numerofactura));
+                            return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, "Factura pagada", Long.parseLong(numerofactura)));
                         }                        
                     }
                 } else {
-                    return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, respuestafactura.getDescripcion(), (long)numerofactura));
+                    return Optional.of(new Respuesta(Ambiente.REGISTROFALLO, respuestafactura.getDescripcion(), Long.parseLong(numerofactura)));
                 }
 //            }
-//        }
+        }
 
         return Optional.empty();
     }
@@ -346,38 +343,48 @@ public class RecaudosFacade {
             String fecha,
             String tipoEstadoTransaccion,  // R Registrando - A anulado
             String token,
-            String tipoTransaccion,
+            String tipoRecaudo,
             String banco,
-            String requestid){
-
+            String requestid) {
+        String sql;
+        
+        if (MyService.getInstance().existeLlave(numerofactura + tipoRecaudo)) {
+            return new Respuesta(Ambiente.REGISTROFALLO, "La factura esta en proceso de registro", numerofactura);
+        }
+        
+        tipoRecaudo = Integer.valueOf(tipoRecaudo) + "";
         try {
-            Optional<Respuesta> respuesta = validarFacturaTipo(numerofactura, cuenta, valor, tipoTransaccion, banco, fecha);
+            Optional<Respuesta> respuesta = validarFacturaTipo(numerofactura.toString(), cuenta, valor, tipoRecaudo, banco, fecha);
             if (respuesta.isPresent()) {
                 return respuesta.get();
             }            
         }catch (Exception e) {
             e.printStackTrace();
-        }       
-
-        String sql;
+        }
 
         if (tipoEstadoTransaccion.equals("R")){
             sql = "Select cuenta, fecharegistro"
                     + " from recaudo"
                     + " where numerofactura = " + numerofactura
                     + " and tipotransaccion = '" + tipoEstadoTransaccion + "'"
+                    + " and tipo = '" + tipoRecaudo + "'"
                     + " and banco = '" + banco + "'";
 
-//            System.out.println("Ejecutando "+ sql);
             try {
                 ResultSet rs = sql1.ejecutarSQLSelect(sql);
                 if (rs.next()) {
                     Date fecharegistro = rs.getDate(2);
-                    
+                    Date fechaActual = new Date();
+
+                    if (tipoRecaudo.equals("0") || (Math.abs(fechaActual.getTime() - fecharegistro.getTime() ) / 1000) < 200) {
+                        return new Respuesta(Ambiente.REGISTROFALLO, "Factura " + numerofactura +" ya ha sido registrada en menos de 200 segundos", numerofactura);
+                    }
+
                     sql = "Select cuenta"
                     + " from recaudo"
                     + " where numerofactura = " + numerofactura
                     + " and tipotransaccion = 'A'"//Anulada
+                    + " and tipo = '" + tipoRecaudo + "'"
                     + " and banco = '" + banco + "'";
 
                     ResultSet rs1 = sql1.ejecutarSQLSelect(sql);
@@ -386,29 +393,32 @@ public class RecaudosFacade {
                             + " from recaudo"
                             + " where numerofactura = " + numerofactura
                             + " and tipotransaccion = '" + tipoEstadoTransaccion + "'"
+                            + " and tipo = '" + tipoRecaudo + "'"
                             + " and banco = '" + banco + "'";
 
                         ResultSet rs2 = sql1.ejecutarSQLSelect(sql);
                         if (rs2.next()) {
-                            if (rs2.getInt(1) > 1)
+                            if (rs2.getInt(1) > 1){
                                 return new Respuesta(Ambiente.REGISTROFALLO, "Factura ya ha sido registrada, anulada y registrada", numerofactura);
+                            }
                         }
                     }
                     else{
                         //Se va a verificar que el pago no se haga durante el mismo                         
                         Date fechaactual = new Date();
-                        
+
                         int dias = (int) ((fechaactual.getTime() - fecharegistro.getTime()) / 86400000);
                         if (dias == 0) {
                             System.out.println("Factura ya registrada en el mismo dia  numerofactura = " + numerofactura 
                                     + "  tipotransaccion = " + tipoEstadoTransaccion);
-                           return new Respuesta(Ambiente.REGISTROFALLO, "Factura " + numerofactura +" ya ha sido registrada", numerofactura);                            
+                           return new Respuesta(Ambiente.REGISTROFALLO, "Factura " + numerofactura +" ya ha sido registrada", numerofactura);
                         }
                         else {
                             System.out.println("Factura ya registrada en dias " + dias + " numerofactura = " + numerofactura + "  tipotransaccion = " + tipoEstadoTransaccion);
                         }
                     }
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 return new Respuesta(Ambiente.REGISTROFALLOINTERNO, "Fallo interno del sistema al consultar la factura", numerofactura);
@@ -423,7 +433,7 @@ public class RecaudosFacade {
                     fecha, 
                     tipoEstadoTransaccion, 
                     token, 
-                    tipoTransaccion,
+                    tipoRecaudo,
                     false,
                     banco,
                     requestid);
@@ -448,17 +458,16 @@ public class RecaudosFacade {
             }
 
             e.printStackTrace();
-            return new Respuesta(Ambiente.REGISTROFALLOINTERNO, "Fallo interno del sistema al registrar recaudo", numerofactura);
+            return new Respuesta(Ambiente.REGISTROFALLOINTERNO, 
+                    "Fallo interno del sistema al registrar recaudo", 
+                    numerofactura);
         }
-            
     }
-    /*
-      public Respuestafactura consultarFactura(String codsuscrip,
-                            Integer tipofact,
-                            Long nrofactura){          
-      }*/
 
-    public Respuestafactura consultarFactura(String codsuscrip, String tipoFactura, String valorAbono, Long numeroFactura){
+    public Respuestafactura consultarFactura(String codsuscrip, 
+                                             String tipoFactura, 
+                                             Long valorAbono, 
+                                             String numeroFactura){
         ConexionSicesp con = ConexionSicesp.getInstance();
         String sql = "";
         Respuestafactura respuestafactura = new Respuestafactura();
@@ -467,9 +476,9 @@ public class RecaudosFacade {
         
         if (tipoFactura.equals("0")) {
             sql = "select NRO_FACTURA, "
-                    + " VR_FACTURA, "
-                    + "iif(EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, CICLO "
-                    + " from(select a.COD_SUSCRIP, NRO_FACTURA, VR_PAGREAL VR_PAGADO_PERIODO, d.FECHA_PAGO, c.EDAD, c.VR_FACTURA, B.CICLO AS CICLO "
+                    + " VR_FACTURA - VR_PAGADO AS VR_FACTURA, "
+                    + "iif(EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, CICLO, VR_PAGADO, VR_FACTURA "
+                    + " from(select a.COD_SUSCRIP, NRO_FACTURA, VR_PAGREAL VR_PAGADO_PERIODO, d.FECHA_PAGO, c.EDAD, c.VR_FACTURA, B.CICLO AS CICLO, a.VR_PAGADO "
                     + "        from SUSCRIPTORES a left outer join CICLOS b on a.CICLO = b.CICLO left "
                     + "                outer join FACTURAS c on a.COD_SUSCRIP = c.COD_SUSCRIP " 
                     + "                   and ANO_FACT = ULT_ANO_FACT and MES_FACT = ULT_MES_FACT "
@@ -480,8 +489,8 @@ public class RecaudosFacade {
         else {
             // 1 (pago cuota inicial financiación):
             if (tipoFactura.equals("1")) {
-                sql = "select a.NRO_FACTURA, "
-                        + "VR_FACTURA, "
+//                sql = "select first 1 a.NRO_FACTURA, VR_FACTURA, "
+                sql = "select first 1 NRO_FINANC, VR_CUOTA_INI, "
                         + "iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, "
                         + "b.CICLO, "
                         + "b.EST_FINANC"
@@ -489,35 +498,48 @@ public class RecaudosFacade {
                       + " left outer join FACTURAS b on a.COD_SUSCRIP = b.COD_SUSCRIP and a.NRO_FACTURA = b.NRO_FACTURA"
                       + " left outer join CICLOS c on b.CICLO = c.CICLO"
                       + " left outer join PERIODOS_FACT d on b.CICLO = d.CICLO and b.ANO_FACT = d.ANO_FACT and b.MES_FACT = d.MES_FACT"
-                      + " where a.COD_SUSCRIP = " + codsuscrip 
-                        + " and NRO_FINANC = " + numeroFactura 
-                        + " and VR_CUOTA_INI = " + valorAbono;
+                      + " where a.COD_SUSCRIP = " + codsuscrip;
+                if (numeroFactura != null && numeroFactura.length() > 2){
+                    sql += " and NRO_FINANC = " + numeroFactura 
+                         + " and VR_CUOTA_INI = " + valorAbono;
+                }
+                      
+                sql += " order by a.NRO_FACTURA desc" ;
             }
             else {
                 // Consulta para tipos de factura 2 (abono por reclamo), 3 (pago parcial), 4 (pago anticipado) y 8 (cobro reorganizacion empresarial):
 
                 if (tipoFactura.equals("2") || tipoFactura.equals("3") || tipoFactura.equals("4") || tipoFactura.equals("8")) {
-                    sql = "select a.NRO_FACTURA, VR_FACTURA, iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, b.CICLO"
+                    
+//                    sql = "select first 1 a.NRO_FACTURA, VR_FACTURA, iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, b.CICLO"
+                    sql = "select first 1 a.NRO_FACTURA, VR_ABONO, iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, b.CICLO"
                         + " from PAGPARCENC a "
                         + " left outer join FACTURAS b on a.COD_SUSCRIP = b.COD_SUSCRIP and a.NRO_FACTURA = b.NRO_FACTURA "
                         + " left outer join CICLOS c on b.CICLO = c.CICLO "
                         + " left outer join PERIODOS_FACT d on b.CICLO = d.CICLO and b.ANO_FACT = d.ANO_FACT and b.MES_FACT = d.MES_FACT "
                         + " where a.COD_SUSCRIP = " + codsuscrip 
-                                + " and a.TIPO_FACT = " + tipoFactura 
-                                + "and a.NRO_FACTURA = " + numeroFactura 
-                                + " and VR_ABONO = " + valorAbono;
+                                + " and a.TIPO_FACT = '" + tipoFactura + "'";
+/*                    if (numeroFactura.length() > 1) {
+                        sql += " and a.NRO_FACTURA = " + numeroFactura 
+                        + " and VR_ABONO = " + valorAbono;
+                    }*/
+                    sql += " order by a.NRO_FACTURA desc";
                 }
                 else {
                     if (tipoFactura.equals("6")) {
-                        sql = "select e.NRO_FACTURA, VR_FACTURA, iif(e.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, b.CICLO, a.ESTADO "
+                        sql = "select first 1 N_PAGO_FINANC, VR_PAGO, iif(e.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, b.CICLO, a.ESTADO "
                             + " from PAGOS_FINANC a "
                             + " left outer join SUSCRIPTORES b on a.COD_SUSCRIP = b.COD_SUSCRIP "
                             + " left outer join CICLOS c on b.CICLO = c.CICLO "
                             + " left outer join PERIODOS_FACT d on c.CICLO = d.CICLO and ULT_ANO_FACT = d.ANO_FACT and ULT_MES_FACT = d.MES_FACT "
                             + " left outer join FACTURAS e on a.COD_SUSCRIP = e.COD_SUSCRIP and d.ANO_FACT = e.ANO_FACT and d.MES_FACT = e.MES_FACT "
-                            + " where a.COD_SUSCRIP = " + codsuscrip 
-                                + " and N_PAGO_FINANC = " + numeroFactura 
-                                + " and VR_PAGO =" + valorAbono;
+                            + " where a.COD_SUSCRIP = " + codsuscrip + " and a.ESTADO = 'PE'";
+                            if (numeroFactura != null && numeroFactura.length() > 1) {
+//                                + " and N_PAGO_FINANC = " + numeroFactura 
+//                                + " and VR_PAGO =" + valorAbono;
+                            }
+                        sql += " order by e.NRO_FACTURA desc";
+
                     }
                 }
             }
@@ -531,42 +553,61 @@ public class RecaudosFacade {
                 respuestafactura.setCodRespuesta(0);
                 respuestafactura.setDescripcion("0");
                 respuestafactura.setCuenta(codsuscrip);
-                respuestafactura.setFechapago(rs.getString(3));
+                respuestafactura.setTipofact((Integer.valueOf(tipoFactura)));
+                DateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd");
+                
+                Date fechapago = new Date((sourceFormat.parse(rs.getString(3))).getTime() + (1000 * 60 * 60 * 24) * 15);
+
+                respuestafactura.setFechapago(sourceFormat.format(fechapago));
+                
                 respuestafactura.setCiclo(rs.getString(4));
                 respuestafactura.setAplicado("N");
-                respuestafactura.setTotalfactura(Long.parseLong(valorAbono));
 
+                Long valorFactura = rs.getLong(2);
+                respuestafactura.setTotalfactura(valorFactura);
+                    
+                
+                if (respuestafactura.getFechapago() != null && respuestafactura.getFechapago().length() == 10){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+                    Integer fechaPago = Integer.parseInt(respuestafactura.getFechapago().replace("-", ""));
+                    Integer fechaActual = Integer.parseInt(dateFormat.format(new Date()));
+
+                    respuestafactura.setFacturavencida(fechaActual > fechaPago ? "S" : "N");
+                } else {
+                    respuestafactura.setFacturavencida("N");
+                }        
+                
                 if (tipoFactura.equals("0")) {
-                    Long valorFactura = rs.getLong(2);
-                    respuestafactura.setTotalfactura(valorFactura);
+                    
+                    respuestafactura.setValorPagado(rs.getLong(5));
+                    respuestafactura.setValorFacturaSinPagos(rs.getLong(6));
 
-                    respuestafactura.setAplicado(consultarPagoUltimaFactura(codsuscrip));
+                    respuestafactura.setAplicado(valorFactura > 0 ? "N": "S");
+
                 } else {
                     if (tipoFactura.equals("1")) {  // Pago cuota inicial de financiacion
-
-                        respuestafactura.setIdfactura(tipoFactura);
                         String estadoFinanciacion = rs.getString(5);
                         
-                        if (estadoFinanciacion.equals("PP")) {
-                            
-                        } else {
-                            respuestafactura.setCodRespuesta(1);
-
-                            if (estadoFinanciacion.equals("VG")) {
-                                respuestafactura.setDescripcion("Ya pagó la cuota inicial");                                
-                            } else {
-                                if (estadoFinanciacion.equals("A4")) {
-                                    respuestafactura.setDescripcion("financiación anulada");                                
-                                }   
-                            }
+                        switch (estadoFinanciacion) {
+                            case "PP":
+                                respuestafactura.setTotalfactura(rs.getLong(2));
+                                break;
+                            case "VG":
+                                respuestafactura.setCodRespuesta(1);
+                                respuestafactura.setDescripcion("Ya pagó la cuota inicial");
+                                respuestafactura.setAplicado("S");
+                            case "A4":
+                                respuestafactura.setCodRespuesta(1);
+                                respuestafactura.setDescripcion("financiación anulada");                                
+                                break;
+                            default:
+                                throw new AssertionError();
                         }
                     }
                     else {
                         if (tipoFactura.equals("6")) {  // Abono financiacion
-                            respuestafactura.setTotalfactura(Long.parseLong(valorAbono));
-                            respuestafactura.setIdfactura(tipoFactura);
                             String estadoFinanciacion = rs.getString(5);
-
+                    
                             if (estadoFinanciacion.equals("PE")) {
 
                             } else {
@@ -586,7 +627,11 @@ public class RecaudosFacade {
             }
             else {
                 respuestafactura.setCodRespuesta(1);
-                respuestafactura.setDescripcion("No se encontraron facturas con numero " + codsuscrip);
+                respuestafactura.setDescripcion("No se encontraron facturas" +
+                                        " codsuscrip: " + codsuscrip +                                             
+                                        ". tipoFactura: " + tipoFactura +
+                                        ". Valor " + valorAbono +
+                                        ". numeroFactura: " + numeroFactura);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -814,6 +859,87 @@ public class RecaudosFacade {
         
         return facturaPagaResponses;
     }
+    
+    public Respuestafacturas consultarFacturas(String codsuscrip) throws Exception{
+        List<Respuestafactura> respuestafacturas = new ArrayList<>();
+        ConexionSicesp con = ConexionSicesp.getInstance();
+        String sql;
+        DateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd");
+           
+        String fechaActualDate = sourceFormat.format(new Date());
+        
+        sql = "select NRO_FACTURA, "
+                + " VR_FACTURA - VR_PAGADO AS VR_FACTURA, "
+                + "iif(EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, 0 AS TIPO "
+                + " from(select a.COD_SUSCRIP, NRO_FACTURA, VR_PAGREAL VR_PAGADO_PERIODO, d.FECHA_PAGO, c.EDAD, c.VR_FACTURA, B.CICLO AS CICLO, a.VR_PAGADO "
+                + "        from SUSCRIPTORES a left outer join CICLOS b on a.CICLO = b.CICLO left "
+                + "                outer join FACTURAS c on a.COD_SUSCRIP = c.COD_SUSCRIP " 
+                + "                   and ANO_FACT = ULT_ANO_FACT and MES_FACT = ULT_MES_FACT "
+                + "                       left outer join PERIODOS_FACT d on c.CICLO = d.CICLO " 
+                + "             and c.ANO_FACT = d.ANO_FACT and c.MES_FACT = d.MES_FACT"
+                + " where a.COD_SUSCRIP = " + codsuscrip + ") where VR_FACTURA - VR_PAGADO > 0";
+        sql += " union all select  NRO_FINANC, VR_CUOTA_INI, "
+                        + "iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, "
+                        + "1 AS TIPO"
+                      + " from FINANCENC a"
+                      + " left outer join FACTURAS b on a.COD_SUSCRIP = b.COD_SUSCRIP and a.NRO_FACTURA = b.NRO_FACTURA"
+                      + " left outer join CICLOS c on b.CICLO = c.CICLO"
+                      + " left outer join PERIODOS_FACT d on b.CICLO = d.CICLO and b.ANO_FACT = d.ANO_FACT and b.MES_FACT = d.MES_FACT"
+                      + " where a.COD_SUSCRIP = " + codsuscrip
+                      + " and b.EST_FINANC = 'PP'";
+        sql += " union all select a.NRO_FACTURA, VR_ABONO, iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, a.TIPO_FACT"
+                        + " from PAGPARCENC a "
+                        + " left outer join FACTURAS b on a.COD_SUSCRIP = b.COD_SUSCRIP and a.NRO_FACTURA = b.NRO_FACTURA "
+                        + " left outer join CICLOS c on b.CICLO = c.CICLO "
+                        + " left outer join PERIODOS_FACT d on b.CICLO = d.CICLO and b.ANO_FACT = d.ANO_FACT and b.MES_FACT = d.MES_FACT "
+                        + " where a.COD_SUSCRIP = " + codsuscrip 
+                        + " and a.TIPO_FACT in (2, 3, 4, 8)"
+                        + " and iif(b.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) >= '" + fechaActualDate + "'";
+        sql += " union all select N_PAGO_FINANC, VR_PAGO, iif(e.EDAD <= 1,FECHA_PAGO+10,FECHA_PAGO) as FECHA_PAGO_CODBARRAS, 6 AS TIPO "
+                            + " from PAGOS_FINANC a "
+                            + " left outer join SUSCRIPTORES b on a.COD_SUSCRIP = b.COD_SUSCRIP "
+                            + " left outer join CICLOS c on b.CICLO = c.CICLO "
+                            + " left outer join PERIODOS_FACT d on c.CICLO = d.CICLO and ULT_ANO_FACT = d.ANO_FACT and ULT_MES_FACT = d.MES_FACT "
+                            + " left outer join FACTURAS e on a.COD_SUSCRIP = e.COD_SUSCRIP and d.ANO_FACT = e.ANO_FACT and d.MES_FACT = e.MES_FACT "
+                            + " where a.COD_SUSCRIP = " + codsuscrip + " and a.ESTADO = 'PE'";
+
+        try {
+            ResultSet rs = con.ejecutarSQLSelect(sql);
+            while (rs.next()) {
+                Respuestafactura respuestafactura = new Respuestafactura();
+
+                respuestafactura.setIdfactura(rs.getLong(1) + "");
+                respuestafactura.setTotalfactura(rs.getLong(2));
+                respuestafactura.setCodRespuesta(0);
+                respuestafactura.setDescripcion("0");
+                respuestafactura.setCuenta(codsuscrip);
+                Date fechapago = new Date((sourceFormat.parse(rs.getString(3))).getTime() + (1000 * 60 * 60 * 24) * 15);
+                respuestafactura.setTipofact((Integer.valueOf(rs.getInt(4))));
+                
+                respuestafactura.setFechapago(sourceFormat.format(fechapago));
+                
+                respuestafactura.setAplicado("N");
+
+                if (respuestafactura.getFechapago() != null && respuestafactura.getFechapago().length() == 10){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+                    Integer fechaPago = Integer.parseInt(respuestafactura.getFechapago().replace("-", ""));
+                    Integer fechaActual = Integer.parseInt(dateFormat.format(new Date()));
+
+                    respuestafactura.setFacturavencida(fechaActual > fechaPago ? "S" : "N");
+                } else {
+                    respuestafactura.setFacturavencida("N");
+                }       
+                respuestafacturas.add(respuestafactura);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return new Respuestafacturas(respuestafacturas);
+    }
+    
+
 
     public static void main(String[] args) {
         
@@ -822,7 +948,7 @@ public class RecaudosFacade {
         //System.out.println("Existe recaudo temporal:" + facade.existeRecaudoEnTemporal("840186", "271049216", "99"));
         //System.out.println("Existe recaudo sicep:" + facade.existeRecaudoSicep("840186", "0", "271049216"));
        
-        Respuestafactura r = facade.consultarFactura("808085", "00", "0", 0l);
+        Respuestafactura r = facade.consultarFactura("831578", "01", 0L, "");
 
 //        facade.registrarRecaudo(271055883l, 12000l, 1000l, "2020-01-01", "00", "0", "0", "0", "0");
 //        System.out.println(facade.consultarmovimiento("20220926", "88").size());
@@ -838,6 +964,3 @@ facade.procesarArchivoOfline(
         System.out.println("r");
     }
 }
-
-
-

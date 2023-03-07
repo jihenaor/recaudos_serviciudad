@@ -4,7 +4,6 @@
     <configuration>
         <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
             <extension file="rest-build.xml" id="rest.5"/>
-            <extension file="jaxws-build.xml" id="jaxws"/>
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
             <name>recaudos</name>
@@ -12,6 +11,10 @@
             <web-module-libraries>
                 <library dirs="200">
                     <file>${file.reference.jaybird-2.2.10.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.javax.ws.rs-api-2.1.1.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">

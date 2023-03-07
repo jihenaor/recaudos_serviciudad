@@ -16,13 +16,13 @@ public class TestRecaudo {
                 
         Respuesta respuesta;
 
-        Long numerofactura = (long)11083;
-        Long cuenta = (long)805668;
-        Long valor = (long)50000;
-        String fecha = "2023-01-20 06:00:47.319";
-        String tipo = "06";
+        Long numerofactura = 271365363L;
+        Long cuenta = 831088L;
+        Long valor = (long)50700;
+        String fecha = "2023-02-01 06:00:47.319";
+        String tipo = "00";
         String token = "1";
-        String banco = null;
+        String banco = "88";
         System.out.println("Cargar pago");
         System.out.println("Fact: " + numerofactura);
         System.out.println("Cuenta: " + cuenta);

@@ -54,7 +54,7 @@ public class ConexionSicesp {
     public boolean crearConexion() {
         String ruta;
 
-        ruta = "jdbc:firebirdsql:192.168.100.10:d:\\datosdb\\DBSICESP.FDB";
+        ruta = "jdbc:firebirdsql:192.168.100.12:C:\\DatosDB\\dbsicesp.fdb";
         System.out.println("Ruta:" + ruta);
         try {
             Class.forName("org.firebirdsql.jdbc.FBDriver");
